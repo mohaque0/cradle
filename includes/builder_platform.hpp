@@ -15,3 +15,36 @@
 #else
 #error Unsupported platform.
 #endif
+
+
+namespace cradle {
+namespace platform {
+namespace os {
+
+bool is_windows() {
+#ifdef PLATFORM_WINDOWS
+	return true;
+#else
+	return false;
+#endif
+}
+
+bool is_linux() {
+#ifdef PLATFORM_LINUX
+	return true;
+#else
+	return false;
+#endif
+}
+
+bool is_mac() {
+#ifdef PLATFORM_MAC
+	return true;
+#else
+	return false;
+#endif
+}
+
+}
+}
+}

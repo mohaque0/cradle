@@ -27,12 +27,16 @@ namespace detail {
 		return value;
 	}
 
-	std::string listToArgs(const std::vector<std::string>& items, const std::string& prefix = "") {
+	std::string listToArgs(const std::string& prefix, const std::vector<std::string>& items) {
 		std::string cmdline = "";
 		for (auto i : items) {
 			cmdline += " " + prefix + i;
 		}
 		return cmdline + " ";
+	}
+
+	std::string listToArgs(const std::vector<std::string>& items) {
+		return listToArgs("", items);
 	}
 
 } // detail
@@ -47,20 +51,23 @@ public:
 	virtual std::string compileObjectCmd(
 		std::string outputFilePath,
 		std::string inputFileName,
-		std::vector<std::string> includeSearchDirs
+		std::vector<std::string> includeSearchDirs,
+		std::vector<std::string> flags = std::vector<std::string>()
 	) = 0;
 
-	virtual std::string compileExeCmd(
+	virtual std::string linkExeCmd(
 		std::string outputFilePath,
 		std::vector<std::string> objectFiles,
         std::vector<std::string> includeSearchDirs,
 		std::vector<std::string> linkLibraryNames,
-		std::vector<std::string> librarySearchPaths
+		std::vector<std::string> librarySearchPaths,
+		std::vector<std::string> flags = std::vector<std::string>()
 	) = 0;
 
-	virtual std::string compileStaticLibCmd(
+	virtual std::string buildStaticLibCmd(
 		std::string outputFilePath,
-		std::vector<std::string> objectFiles
+		std::vector<std::string> objectFiles,
+		std::vector<std::string> flags = std::vector<std::string>()
 	) = 0;
 
 	static std::shared_ptr<Toolchain> platformDefault();
@@ -87,61 +94,45 @@ public:
 	std::string compileObjectCmd(
 		std::string outputFileName,
 		std::string inputFileName,
-		std::vector<std::string> includeSearchDirs
+		std::vector<std::string> includeSearchDirs,
+		std::vector<std::string> flags
 	) override {
 		std::string cmdline = compiler;
+		cmdline += detail::listToArgs(flags);
 		cmdline += " -c ";
 		cmdline += inputFileName;
-
-		for (auto name : includeSearchDirs) {
-			cmdline += " -I" +  name;
-		}
-
+		cmdline += detail::listToArgs("-I", includeSearchDirs);
 		cmdline += " -o " + outputFileName;
-
 		return cmdline;
 	}
 
-	std::string compileExeCmd(
+	std::string linkExeCmd(
 		std::string outputFileName,
 		std::vector<std::string> objectFiles,
         std::vector<std::string> includeSearchDirs,
 		std::vector<std::string> linkLibraryNames,
-		std::vector<std::string> librarySearchPaths
+		std::vector<std::string> librarySearchPaths,
+		std::vector<std::string> flags
 	) override {
 		std::string cmdline = compiler;
-
-		for (auto name : includeSearchDirs) {
-			cmdline += " -I" + name;
-		}
-
-		for (auto name : librarySearchPaths) {
-			cmdline += " -L" + name;
-		}
-
-		for (auto name : objectFiles) {
-			cmdline += " " + name;
-		}
-
-		for (auto name : linkLibraryNames) {
-			cmdline += " -l" + name;
-		}
-
+		cmdline += detail::listToArgs(flags);
+		cmdline += detail::listToArgs("-I", includeSearchDirs);
+		cmdline += detail::listToArgs("-L", librarySearchPaths);
+		cmdline += detail::listToArgs(objectFiles);
+		cmdline += detail::listToArgs("-l", linkLibraryNames);
 		cmdline += " -o " + outputFileName;
-
 		return cmdline;
 	}
 
-	std::string compileStaticLibCmd(
+	std::string buildStaticLibCmd(
 		std::string outputFileName,
-		std::vector<std::string> objectFiles
+		std::vector<std::string> objectFiles,
+		std::vector<std::string> flags
 	) override {
 		std::string cmdline = archiver;
-
 		cmdline += " rcs ";
 		cmdline += outputFileName;
 		cmdline += detail::listToArgs(objectFiles);
-
 		return cmdline;
 	}
 };
@@ -170,40 +161,33 @@ public:
 	std::string compileObjectCmd(
 		std::string outputFileName,
 		std::string inputFileName,
-		std::vector<std::string> includeSearchDirs
+		std::vector<std::string> includeSearchDirs,
+		std::vector<std::string> flags
 	) override {
 		std::string cmdline = compiler;
+		cmdline += detail::listToArgs(flags);
 		cmdline += " /c ";
 		cmdline += inputFileName;
-
-		for (auto name : includeSearchDirs) {
-			cmdline += " /I" +  name;
-		}
-
+		cmdline += detail::listToArgs("/I", includeSearchDirs);
 		cmdline += " /Fo" + outputFileName;
-
 		return cmdline;
 	}
 
-	std::string compileExeCmd(
+	std::string linkExeCmd(
 		std::string outputFileName,
 		std::vector<std::string> objectFiles,
         std::vector<std::string> includeSearchDirs,
 		std::vector<std::string> linkLibraryNames,
-		std::vector<std::string> librarySearchPaths
+		std::vector<std::string> librarySearchPaths,
+		std::vector<std::string> flags
 	) override {
         std::string cmdline = linker;
-
-		for (auto name : librarySearchPaths) {
-			cmdline += " /LIBPATH:" + name;
-		}
-
-		for (auto name : objectFiles) {
-			cmdline += " " + name;
-		}
+		cmdline += detail::listToArgs(flags);
+		cmdline += detail::listToArgs("/LIBPATH:", librarySearchPaths);
+		cmdline += detail::listToArgs(objectFiles);
 
 		for (auto name : linkLibraryNames) {
-            cmdline += " " + name + ".lib";
+			cmdline += " " + staticLibNameFromBase(name);
 		}
 
         cmdline += " /OUT:" + outputFileName + ".exe";
@@ -211,16 +195,16 @@ public:
 		return cmdline;
 	}
 
-	std::string compileStaticLibCmd(
+	std::string buildStaticLibCmd(
 		std::string outputFileName,
-		std::vector<std::string> objectFiles
+		std::vector<std::string> objectFiles,
+		std::vector<std::string> flags
 	) override {
 		std::string cmdline = archiver;
-
+		cmdline += detail::listToArgs(flags);
         cmdline += " ";
         cmdline += "/OUT:" + outputFileName;
 		cmdline += detail::listToArgs(objectFiles);
-
 		return cmdline;
 	}
 };

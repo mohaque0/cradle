@@ -157,7 +157,7 @@ task_p static_lib(
 		}
 
 		if (needsRebuild(outputFile, objectFiles)) {
-			std::string cmdline = toolchain->compileStaticLibCmd(outputFile, objectFiles);
+			std::string cmdline = toolchain->buildStaticLibCmd(outputFile, objectFiles);
 			io::mkdirs(io::path_parent(outputFile));
 			return exec(cmdline)->execute();
 		} else {
@@ -215,7 +215,7 @@ task_p exe(
 			needsRebuild(outputFile, objectFiles) ||
 			needsRebuild(outputFile, linkLibraries)
 		) {
-			std::string cmdline = toolchain->compileExeCmd(
+			std::string cmdline = toolchain->linkExeCmd(
 				outputFile,
 				objectFiles,
 				includeSearchDirs,
