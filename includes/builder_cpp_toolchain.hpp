@@ -42,8 +42,25 @@ namespace detail {
 } // detail
 
 class Toolchain {
+protected:
+	std::vector<std::string> compileFlags;
+	std::vector<std::string> linkFlags;
+	std::vector<std::string> staticLibFlags;
+
 public:
 	virtual ~Toolchain() {}
+
+	void addCompileFlags(const std::vector<std::string>& flags) {
+		compileFlags.insert(compileFlags.end(), flags.begin(), flags.end());
+	}
+
+	void addLinkFlags(const std::vector<std::string>& flags) {
+		linkFlags.insert(compileFlags.end(), flags.begin(), flags.end());
+	}
+
+	void addStaticLibFlags(const std::vector<std::string>& flags) {
+		staticLibFlags.insert(compileFlags.end(), flags.begin(), flags.end());
+	}
 
 	virtual std::string objectFileNameFromBase(const std::string& base) = 0;
 	virtual std::string staticLibNameFromBase(const std::string& base) = 0;
@@ -98,6 +115,7 @@ public:
 		std::vector<std::string> flags
 	) override {
 		std::string cmdline = compiler;
+		cmdline += detail::listToArgs(compileFlags);
 		cmdline += detail::listToArgs(flags);
 		cmdline += " -c ";
 		cmdline += inputFileName;
@@ -115,11 +133,12 @@ public:
 		std::vector<std::string> flags
 	) override {
 		std::string cmdline = compiler;
-		cmdline += detail::listToArgs(flags);
 		cmdline += detail::listToArgs("-I", includeSearchDirs);
 		cmdline += detail::listToArgs("-L", librarySearchPaths);
 		cmdline += detail::listToArgs(objectFiles);
 		cmdline += detail::listToArgs("-l", linkLibraryNames);
+		cmdline += detail::listToArgs(linkFlags);
+		cmdline += detail::listToArgs(flags);
 		cmdline += " -o " + outputFileName;
 		return cmdline;
 	}
@@ -130,6 +149,7 @@ public:
 		std::vector<std::string> flags
 	) override {
 		std::string cmdline = archiver;
+		cmdline += detail::listToArgs(staticLibFlags);
 		cmdline += " rcs ";
 		cmdline += outputFileName;
 		cmdline += detail::listToArgs(objectFiles);
@@ -165,6 +185,7 @@ public:
 		std::vector<std::string> flags
 	) override {
 		std::string cmdline = compiler;
+		cmdline += detail::listToArgs(compileFlags);
 		cmdline += detail::listToArgs(flags);
 		cmdline += " /c ";
 		cmdline += inputFileName;
@@ -181,8 +202,7 @@ public:
 		std::vector<std::string> librarySearchPaths,
 		std::vector<std::string> flags
 	) override {
-        std::string cmdline = linker;
-		cmdline += detail::listToArgs(flags);
+		std::string cmdline = linker;
 		cmdline += detail::listToArgs("/LIBPATH:", librarySearchPaths);
 		cmdline += detail::listToArgs(objectFiles);
 
@@ -190,6 +210,8 @@ public:
 			cmdline += " " + staticLibNameFromBase(name);
 		}
 
+		cmdline += detail::listToArgs(linkFlags);
+		cmdline += detail::listToArgs(flags);
         cmdline += " /OUT:" + outputFileName + ".exe";
 
 		return cmdline;
@@ -201,6 +223,7 @@ public:
 		std::vector<std::string> flags
 	) override {
 		std::string cmdline = archiver;
+		cmdline += detail::listToArgs(staticLibFlags);
 		cmdline += detail::listToArgs(flags);
         cmdline += " ";
         cmdline += "/OUT:" + outputFileName;
