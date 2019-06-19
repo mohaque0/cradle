@@ -1,0 +1,23 @@
+#!/bin/sh -v
+
+VERSION=v0.1-alpha
+DST_DIR=build
+
+if [ -z "$CXX" ]; then
+	echo "Must define environment variable \$CXX to point a valid compiler."
+	exit
+fi
+
+mkdir -p $DST_DIR
+
+wget https://github.com/mohaque0/cradle/releases/download/$VERSION/builder.hpp -O $DST_DIR/builder.hpp
+get_result=$?
+
+if [ get_result -ne 0 ]; then
+	echo "Error fetching builder version $VERSION."
+	exit
+fi
+
+$CXX -I$DST_DIR build.cpp -std=c++14 -o $DST_DIR/cradle
+
+$DST_DIR/cradle $@
