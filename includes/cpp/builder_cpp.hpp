@@ -244,6 +244,14 @@ task_p exe(
 
 } // namespace detail
 
+class static_lib_args {
+	task_arg_d(std::string, name)
+	task_arg_d(std::vector<std::string>, sourceFiles)
+	task_arg_d(std::vector<std::string>, includeSearchDirs)
+	task_arg_v(std::string, outputDirectory, "build")
+	task_arg_v(std::shared_ptr<Toolchain>, toolchain, Toolchain::platformDefault())
+};
+
 task_p static_lib(
 	std::string name,
 	std::vector<std::string> sourceFiles,
@@ -252,6 +260,11 @@ task_p static_lib(
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 	return detail::static_lib(name, name, sourceFiles, includeSearchDirs, outputDirectory, toolchain);
+}
+
+// TODO: The builder version should be the base implementation.
+task_p static_lib(const static_lib_args& args) {
+	return static_lib(args.name_, args.sourceFiles_, args.includeSearchDirs_, args.outputDirectory_, args.toolchain_);
 }
 
 task_p static_lib(
