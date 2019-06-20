@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+namespace cradle {
 namespace cpp {
 
 class EnvToolchain;
@@ -244,3 +245,4 @@ std::shared_ptr<Toolchain> Toolchain::platformDefault() {
 }
 
 } // namespace cpp
+} // namespace cradle

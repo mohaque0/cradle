@@ -18,6 +18,7 @@
 #define stat _stat
 #endif
 
+namespace cradle {
 namespace io {
 
 bool exists(const std::string& filepath) {
@@ -35,3 +36,4 @@ struct stat getStat(const std::string& filepath) {
 }
 
 } // namespace io
+} // namespace cradle

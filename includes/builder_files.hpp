@@ -9,6 +9,7 @@
 #include <string.h>
 #include <regex>
 
+namespace cradle {
 namespace io {
 
 static const std::string FILE_LIST = "FILE_LIST";
@@ -185,3 +186,4 @@ task_p files(std::string dir, std::string include = std::string(".*"), std::stri
 }
 
 } // namespace io
+} // namespace cradle

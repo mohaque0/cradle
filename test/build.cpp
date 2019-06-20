@@ -1,5 +1,7 @@
 #include <builder.hpp>
 
+using namespace cradle;
+
 build_config {
 	auto lib = cpp::static_lib(
 		"static_lib",

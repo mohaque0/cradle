@@ -9,6 +9,7 @@
 
 #include <time.h>
 
+namespace cradle {
 namespace cpp {
 
 static const std::string OUTPUT_FILE = "OUTPUT_FILE";
@@ -338,3 +339,4 @@ task_p exe(
 }
 
 } // namespace cpp
+} // namespace cradle

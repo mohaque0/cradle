@@ -17,6 +17,8 @@
 	}                                  \
 	void configure()
 
+namespace cradle {
+
 class Executor;
 class SingleThreadedExecutor;
 class Task;
@@ -263,5 +265,7 @@ void log(const std::string& msg) {
 void log_error(const std::string& msg) {
 	printf("ERROR: %s\n", msg.c_str());
 }
+
+} // namespace cradle
 
 
