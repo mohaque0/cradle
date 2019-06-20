@@ -2,8 +2,8 @@
 
 #include <builder_main.hpp>
 #include <builder_platform.hpp>
-#include <builder_tinydir.hpp>
 #include <builder_types.hpp>
+#include <io/builder_tinydir.hpp>
 
 #include <algorithm>
 #include <string.h>

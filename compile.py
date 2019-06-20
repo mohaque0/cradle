@@ -29,7 +29,9 @@ def create_context():
     for dirname, subdirs, files in os.walk(INCLUDE_SEARCH_PATH):
         for filename in files:
             header_file_path = os.path.join(dirname, filename)
-            headers[filename] = HeaderFile(header_file_path)
+            key = header_file_path[len(INCLUDE_SEARCH_PATH + "/"):]
+
+            headers[key] = HeaderFile(header_file_path)
 
     return headers
 
@@ -59,6 +61,8 @@ def build_helper(target, context, headerFile):
             target.write(line)
 
 def build(context, targetfile):
+    print "Writing unified header to:", targetfile
+
     # Make the parent directory.
     target_parent_dir = os.path.dirname(targetfile)
     if not os.path.exists(target_parent_dir):
@@ -73,6 +77,12 @@ def build(context, targetfile):
 
 def main(args):
     context = create_context()
+
+    print "Creating unified header from:"
+    for header in sorted(context.keys()):
+	print '\t', header
+    print
+
     build(context, TARGET_HEADER_FILE)
             
 if __name__=="__main__":
