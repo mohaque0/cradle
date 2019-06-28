@@ -4,7 +4,7 @@ import sys
 import os
 import re
 
-TARGET_HEADER_FILE = "build/includes/builder.hpp" 
+TARGET_HEADER_FILE = "build/includes/cradle.hpp" 
 PRAGMA_ONCE_MACRO = "#pragma once"
 INCLUDE_SEARCH_PATH = "includes"
 INCLUDE_REGEX_STRING = r'#include\s+["<]([^"\n]*)[">]'

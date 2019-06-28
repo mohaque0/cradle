@@ -1,9 +1,9 @@
 #pragma once
 
-#include <builder_main.hpp>
-#include <builder_platform.hpp>
-#include <builder_types.hpp>
-#include <io/builder_tinydir.hpp>
+#include <cradle_main.hpp>
+#include <cradle_platform.hpp>
+#include <cradle_types.hpp>
+#include <io/cradle_tinydir.hpp>
 
 #include <algorithm>
 #include <string.h>
