@@ -2,6 +2,8 @@
 
 VERSION=v0.1-alpha
 DST_DIR=build
+DST_FILE=$DST_DIR/builder.hpp
+DST_SHA256="b177bf1d22ac38418f856c5be665c443ba12d153ba3385456c9b0593339c3c59"
 
 if [ -z "$CXX" ]; then
 	echo "Must define environment variable \$CXX to point a valid compiler."
@@ -10,14 +12,21 @@ fi
 
 mkdir -p $DST_DIR
 
-wget https://github.com/mohaque0/cradle/releases/download/$VERSION/builder.hpp -O $DST_DIR/builder.hpp
-get_result=$?
+if [ ! -f $DST_FILE ]; then
+	wget https://github.com/mohaque0/cradle/releases/download/$VERSION/builder.hpp -O $DST_FILE
+	get_result=$?
 
-if [ get_result -ne 0 ]; then
-	echo "Error fetching builder version $VERSION."
+	if [ get_result -ne 0 ]; then
+		echo "Error fetching builder version $VERSION."
+		exit
+	fi
+fi
+
+actualHash=`sha256sum $DST_FILE | cut -f 1 -d" "`
+if [ "$DST_SHA256" != "$actualHash" ]; then
+	echo "Downloaded file hash $actualHash doesn't match the expected $DST_SHA256."
 	exit
 fi
 
 $CXX -I$DST_DIR build.cpp -std=c++14 -o $DST_DIR/cradle
-
 $DST_DIR/cradle $@
