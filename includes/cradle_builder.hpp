@@ -12,23 +12,23 @@
  * appropriate string values. This reduces the boilerplate necessary to create simple builders.
  *
  * For example:
- * @code{.cpp}
- *	class MyBuilder {
- *	public:
- *		BuilderValue<MyBuilder, std::string> name{this}  //
+ * ```cpp
+ *		class MyBuilder {
+ *		public:
+ *			BuilderValue<MyBuilder, std::string> name{this}
  *
- *		task_p build() {
- *			return task(name, [] { return ExecutionStatus::SUCCESS; });
+ *			task_p build() {
+ *				return task(name, [] { return ExecutionStatus::SUCCESS; });
+ *			}
  *		}
- *	}
  *
  *
- *	int myFunctionThatUsesBuilder() {
- *		auto b = MyBuilder()
- *			.name("myName")
- *			.build()
- *	}
- * @endcode
+ *		int myFunctionThatUsesBuilder() {
+ *			auto b = MyBuilder()
+ *				.name("myName")
+ *				.build()
+ *		}
+ * ```
  */
 
 #pragma once

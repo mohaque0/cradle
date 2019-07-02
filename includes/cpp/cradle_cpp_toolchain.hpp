@@ -1,3 +1,9 @@
+/**
+ * @file cradle_cpp_toolchain.hpp
+ *
+ * @brief Contains the interface and implementations of wrapper classes for executing toolchains.
+ */
+
 #pragma once
 
 #include <cradle_main.hpp>

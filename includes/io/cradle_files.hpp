@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include <cradle_main.hpp>
@@ -10,6 +14,7 @@
 #include <regex>
 
 namespace cradle {
+
 namespace io {
 
 static const std::string FILE_LIST = "FILE_LIST";

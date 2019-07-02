@@ -1,3 +1,9 @@
+/**
+ * @file cradle_types.hpp
+ *
+ * @brief Contains utility functions for creating trivial tasks.
+ */
+
 #pragma once
 
 #include <cradle_main.hpp>

@@ -1,6 +1,7 @@
 BUILD_DIR=build
 
-.PHONY:
+.PHONY: test run docs
+
 test: ${BUILD_DIR}/cradle
 	${BUILD_DIR}/cradle main
 
@@ -11,9 +12,12 @@ ${BUILD_DIR}/cradle: test/build.cpp ${BUILD_DIR}/includes/cradle.hpp
 ${BUILD_DIR}/includes/cradle.hpp: $(wildcard includes/*.hpp)
 	./compile.py
 
-.PHONY:
 run:
-	./build/main
+	./${BUILD_DIR}/main
 
 clean:
-	rm -rf build
+	rm -rf ${BUILD_DIR}
+
+docs:
+	mkdir -p ${BUILD_DIR}/docs
+	doxygen

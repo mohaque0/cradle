@@ -1,5 +1,9 @@
-/*
- * Only supports detection of Linux, Mac, and Windows.
+/**
+ * @file cradle_platform.hpp
+ *
+ * @brief Macros and functions for getting information about the platform that cradle is running on.
+ *
+ * Currently only supports detection of Linux, Mac, and Windows.
  */
 
 #pragma once
