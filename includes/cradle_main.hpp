@@ -13,7 +13,7 @@
 #define build_config                   \
 	void configure();                  \
 	int main(int argc, char** argv) {  \
-	  log("CPP Builder Version 0.1");  \
+	  log("Cradle Version 0.1");       \
 	  parseCmdLineArgs(argc, argv);    \
 	  configure();                     \
 	  executor->execute();             \
@@ -244,6 +244,13 @@ public:
 
 /**
  * Create a task and add it to the executor with the given name.
+ *
+ * @tparam F This is always a function type equivalent to (Task* Self) -> ExecutionResult.
+ *
+ * @param f This is a function of type (Task* self) -> ExecutionResult.
+ *          The function represents the behavior of the task and should return the appropriate
+ *          result representing the results of execution.
+ *          The `self` argument passed to `f` is always a pointer to the created task object.
  */
 template <typename F>
 task_p task(std::string name, F&& f) {
@@ -254,6 +261,13 @@ task_p task(std::string name, F&& f) {
 
 /**
  * Create a task with no name. It will not be added to the executor.
+ *
+ * @tparam F This is always a function type equivalent to (Task* Self) -> ExecutionResult.
+ *
+ * @param f This is a function of type (Task* self) -> ExecutionResult.
+ *          The function represents the behavior of the task and should return the appropriate
+ *          result representing the results of execution.
+ *          The `self` argument passed to `f` is always a pointer to the created task object.
  */
 template <typename F>
 task_p task(F&& f) {
