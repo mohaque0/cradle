@@ -23,8 +23,7 @@ class Executor;
 class SingleThreadedExecutor;
 class Task;
 
-#define sp std::shared_ptr
-typedef sp<Task> task_p;
+typedef std::shared_ptr<Task> task_p;
 
 void log(const std::string& msg);
 void log_error(const std::string& msg);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cradle_builder.hpp>
 #include <cradle_exec.hpp>
 #include <cradle_main.hpp>
 #include <cradle_types.hpp>
@@ -289,21 +290,21 @@ task_p static_lib(
 	return configure;
 }
 
-class static_lib_builder {
+class StaticLibBuilder {
 public:
-    builder_val<static_lib_builder, std::string> name{this};
-    builder_str_list<static_lib_builder> sourceFiles{this, io::FILE_LIST};
-    builder_str_list<static_lib_builder> includeSearchDirs{this, io::FILE_LIST};
-    builder_val<static_lib_builder, std::string> outputDirectory{this, "build"};
-    builder_val<static_lib_builder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
+	BuilderValue<StaticLibBuilder, std::string> name{this};
+	BuilderStrList<StaticLibBuilder> sourceFiles{this, io::FILE_LIST};
+	BuilderStrList<StaticLibBuilder> includeSearchDirs{this, io::FILE_LIST};
+	BuilderValue<StaticLibBuilder, std::string> outputDirectory{this, "build"};
+	BuilderValue<StaticLibBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
     task_p build() {
         return static_lib(name, sourceFiles, includeSearchDirs, outputDirectory, toolchain);
     }
 };
 
-static_lib_builder static_lib() {
-    return static_lib_builder();
+StaticLibBuilder static_lib() {
+	return StaticLibBuilder();
 }
 
 task_p exe(
@@ -356,15 +357,15 @@ task_p exe(
 }
 
 
-class exe_builder {
+class ExeBuilder {
 public:
-    builder_val<exe_builder, std::string> name{this};
-    builder_str_list<exe_builder> sourceFiles{this, io::FILE_LIST};
-    builder_str_list<exe_builder> includeSearchDirs{this, io::FILE_LIST};
-    builder_list<exe_builder, task_p> linkLibraryTasks{this, {}};
-    builder_str_list<exe_builder> librarySearchPathList{this, io::FILE_LIST, emptyList(io::FILE_LIST)};
-    builder_val<exe_builder, std::string> outputDirectory{this, "build"};
-    builder_val<exe_builder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
+	BuilderValue<ExeBuilder, std::string> name{this};
+	BuilderStrList<ExeBuilder> sourceFiles{this, io::FILE_LIST};
+	BuilderStrList<ExeBuilder> includeSearchDirs{this, io::FILE_LIST};
+	BuilderList<ExeBuilder, task_p> linkLibraryTasks{this, {}};
+	BuilderStrList<ExeBuilder> librarySearchPathList{this, io::FILE_LIST, emptyList(io::FILE_LIST)};
+	BuilderValue<ExeBuilder, std::string> outputDirectory{this, "build"};
+	BuilderValue<ExeBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
     task_p build() {
         return exe(
@@ -379,8 +380,8 @@ public:
     }
 };
 
-exe_builder exe() {
-    return exe_builder();
+ExeBuilder exe() {
+	return ExeBuilder();
 }
 
 } // namespace cpp
