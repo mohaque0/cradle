@@ -8,19 +8,13 @@
 // Code modified from: https://stackoverflow.com/questions/40504281/c-how-to-check-the-last-modified-time-of-a-file
 //
 
-#include <cradle_platform.hpp>
+#include <platform/cradle_platform.hpp>
+#include <platform/cradle_platform_util.hpp>
 #include <cstring>
 #include <stdexcept>
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef PLATFORM_WINDOWS
-#include <unistd.h>
-#endif
-
-#ifdef PLATFORM_WINDOWS
-#define stat _stat
-#endif
 
 namespace cradle {
 namespace io {

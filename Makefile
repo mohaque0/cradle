@@ -3,7 +3,7 @@ BUILD_DIR=build
 .PHONY: test run docs
 
 test: ${BUILD_DIR}/cradle
-	${BUILD_DIR}/cradle main
+	${BUILD_DIR}/cradle test_exec
 
 ${BUILD_DIR}/cradle: test/build.cpp ${BUILD_DIR}/includes/cradle.hpp
 	mkdir -p ${BUILD_DIR}
@@ -13,10 +13,11 @@ ${BUILD_DIR}/includes/cradle.hpp: $(wildcard includes/*.hpp)
 	./compile.py
 
 run:
-	./${BUILD_DIR}/main
+	./test/build/test_exec
 
 clean:
 	rm -rf ${BUILD_DIR}
+	rm -rf test/build
 
 docs:
 	mkdir -p ${BUILD_DIR}/docs

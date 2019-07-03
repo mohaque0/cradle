@@ -5,9 +5,10 @@
 #pragma once
 
 #include <cradle_main.hpp>
-#include <cradle_platform.hpp>
 #include <cradle_types.hpp>
 #include <io/cradle_tinydir.hpp>
+#include <platform/cradle_platform.hpp>
+#include <platform/cradle_platform_util.hpp>
 
 #include <algorithm>
 #include <string.h>
@@ -22,28 +23,6 @@ static const std::string FILE_LIST = "FILE_LIST";
 //
 // Platform dependent section.
 //
-
-#ifdef PLATFORM_WINDOWS
-#include <direct.h>
-
-#define PATH_SEP ('\\')
-
-int platform_mkdir(const char * const str) {
-	return _mkdir(str);
-}
-
-#else
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#define PATH_SEP ('/')
-
-int platform_mkdir(const char * const str) {
-	return mkdir(str, 0744);
-}
-
-#endif
 
 //
 // End platform dependent section.
@@ -114,7 +93,7 @@ std::string path_ext(std::string p) {
 void mkdir_if_necessary(std::string d) {
     tinydir_dir dir;
     if (tinydir_open(&dir, d.c_str()) != 0) {
-        if (platform_mkdir(d.c_str()) != 0) {
+		if (platform::platform_mkdir(d.c_str()) != 0) {
             printf("Error making directory %s: %s", d.c_str(), strerror(errno));
         }
     }

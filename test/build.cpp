@@ -5,14 +5,14 @@ using namespace cradle;
 build_config {
     auto lib = cpp::static_lib()
             .name("static_lib")
-            .sourceFiles(io::files("test/lib", ".*.cpp"))
-            .includeSearchDirs({"test"})
+			.sourceFiles(io::files("lib", ".*.cpp"))
+			.includeSearchDirs({"."})
             .build();
 
     auto exe = cpp::exe()
-            .name("main")
-            .sourceFiles(io::files("test/main", ".*.cpp", ".*/build.cpp"))
-            .includeSearchDirs(listOf(io::FILE_LIST, {"includes", "test"}))
+			.name("test_exec")
+			.sourceFiles(io::files("main", ".*.cpp", ".*/build.cpp"))
+			.includeSearchDirs(listOf(io::FILE_LIST, {"."}))
             .linkLibraryTasks(lib)
             .build();
 }

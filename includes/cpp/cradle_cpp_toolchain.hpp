@@ -7,7 +7,8 @@
 #pragma once
 
 #include <cradle_main.hpp>
-#include <cradle_platform.hpp>
+#include <platform/cradle_platform.hpp>
+
 #include <memory>
 #include <string>
 

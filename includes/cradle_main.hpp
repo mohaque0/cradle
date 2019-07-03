@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <platform/cradle_platform_util.hpp>
+
 #include <cstdlib>
 #include <memory>
 #include <queue>
@@ -19,6 +21,7 @@
 	void configure();                         \
 	int main(int argc, char** argv) {         \
 	  log("Cradle Version v0.1-alpha");       \
+	  cradle::platform::platform_chdir(cradle::io::path_parent(getBuildConfigFile())); \
 	  parseCmdLineArgs(argc, argv);           \
 	  configure();                            \
 	  executor->execute();                    \
