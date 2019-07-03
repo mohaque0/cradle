@@ -3,6 +3,12 @@
 using namespace cradle;
 
 build_config {
+	auto conan = conan::conan_install()
+			.name("conan")
+			.installFolder("build")
+			.pathToConanfile(".")
+			.build();
+
     auto lib = cpp::static_lib()
             .name("static_lib")
 			.sourceFiles(io::files("lib", ".*.cpp"))

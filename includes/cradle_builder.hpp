@@ -67,6 +67,7 @@ class Str : public Value<Builder, std::string> {
 public:
 	Str() = delete;
 	Str(Builder* builder) : Value<Builder, std::string>(builder) {}
+	Str(Builder* builder, const std::string& defaultValue) : Value<Builder, std::string>(builder, defaultValue) {}
 };
 
 template<typename Builder, typename ValueType>
@@ -91,6 +92,16 @@ public:
 		if (!isSet) throw new std::runtime_error("Attempting to access unset value.");
 		return value;
 	}
+};
+
+template<typename Builder>
+class StrList : public List<Builder, std::string> {
+public:
+	StrList() = delete;
+	StrList(Builder* builder) : List<Builder, std::string>(builder) {}
+	StrList(Builder* builder, std::initializer_list<std::string> defaultValues) :
+		List<Builder, std::string>(builder, defaultValues)
+	{}
 };
 
 template <typename Builder>
