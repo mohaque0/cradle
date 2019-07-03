@@ -296,11 +296,11 @@ task_p static_lib(
 
 class StaticLibBuilder {
 public:
-	BuilderValue<StaticLibBuilder, std::string> name{this};
-	BuilderStrList<StaticLibBuilder> sourceFiles{this, io::FILE_LIST};
-	BuilderStrList<StaticLibBuilder> includeSearchDirs{this, io::FILE_LIST};
-	BuilderValue<StaticLibBuilder, std::string> outputDirectory{this, "build"};
-	BuilderValue<StaticLibBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
+	builder::Value<StaticLibBuilder, std::string> name{this};
+	builder::StrListFromTask<StaticLibBuilder> sourceFiles{this, io::FILE_LIST};
+	builder::StrListFromTask<StaticLibBuilder> includeSearchDirs{this, io::FILE_LIST};
+	builder::Value<StaticLibBuilder, std::string> outputDirectory{this, "build"};
+	builder::Value<StaticLibBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
     task_p build() {
         return static_lib(name, sourceFiles, includeSearchDirs, outputDirectory, toolchain);
@@ -363,13 +363,13 @@ task_p exe(
 
 class ExeBuilder {
 public:
-	BuilderValue<ExeBuilder, std::string> name{this};
-	BuilderStrList<ExeBuilder> sourceFiles{this, io::FILE_LIST};
-	BuilderStrList<ExeBuilder> includeSearchDirs{this, io::FILE_LIST};
-	BuilderList<ExeBuilder, task_p> linkLibraryTasks{this, {}};
-	BuilderStrList<ExeBuilder> librarySearchPathList{this, io::FILE_LIST, emptyList(io::FILE_LIST)};
-	BuilderValue<ExeBuilder, std::string> outputDirectory{this, "build"};
-	BuilderValue<ExeBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
+	builder::Value<ExeBuilder, std::string> name{this};
+	builder::StrListFromTask<ExeBuilder> sourceFiles{this, io::FILE_LIST};
+	builder::StrListFromTask<ExeBuilder> includeSearchDirs{this, io::FILE_LIST};
+	builder::List<ExeBuilder, task_p> linkLibraryTasks{this, {}};
+	builder::StrListFromTask<ExeBuilder> librarySearchPathList{this, io::FILE_LIST, emptyList(io::FILE_LIST)};
+	builder::Value<ExeBuilder, std::string> outputDirectory{this, "build"};
+	builder::Value<ExeBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
     task_p build() {
         return exe(

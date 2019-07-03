@@ -36,17 +36,17 @@
 #include <cradle_types.hpp>
 
 namespace cradle {
-
+namespace builder {
 
 template<typename Builder, typename ValueType>
-class BuilderValue {
+class Value {
 	Builder& builder;
 	ValueType value;
 	bool isSet;
 public:
-	BuilderValue() = delete;
-	BuilderValue(Builder* builder) : builder(*builder), isSet(false) {}
-	BuilderValue(Builder* builder, const ValueType& defaultValue) :
+	Value() = delete;
+	Value(Builder* builder) : builder(*builder), isSet(false) {}
+	Value(Builder* builder, const ValueType& defaultValue) :
 		builder(*builder),
 		value(defaultValue),
 		isSet(true)
@@ -62,15 +62,22 @@ public:
 	}
 };
 
+template<typename Builder>
+class Str : public Value<Builder, std::string> {
+public:
+	Str() = delete;
+	Str(Builder* builder) : Value<Builder, std::string>(builder) {}
+};
+
 template<typename Builder, typename ValueType>
-class BuilderList {
+class List {
 	Builder& builder;
 	std::vector<ValueType> value;
 	bool isSet;
 public:
-	BuilderList() = delete;
-	BuilderList(Builder* builder) : builder(*builder), isSet(false) {}
-	BuilderList(Builder* builder, std::initializer_list<ValueType> defaultValues) :
+	List() = delete;
+	List(Builder* builder) : builder(*builder), isSet(false) {}
+	List(Builder* builder, std::initializer_list<ValueType> defaultValues) :
 		builder(*builder),
 		value(defaultValues),
 		isSet(true)
@@ -87,10 +94,10 @@ public:
 };
 
 template <typename Builder>
-class BuilderStr : public BuilderValue<Builder, task_p> {
+class StrFromTask : public Value<Builder, task_p> {
 public:
-	BuilderStr(Builder* builder, std::string key, std::string defaultValue) :
-		BuilderValue<Builder, task_p>(
+	StrFromTask(Builder* builder, std::string key, std::string defaultValue) :
+		Value<Builder, task_p>(
 			*builder,
 			[key, defaultValue] (Task* self) { self->set(key, defaultValue); return ExecutionResult::SUCCESS; }
 		)
@@ -98,18 +105,18 @@ public:
 };
 
 template <typename Builder>
-class BuilderStrList {
+class StrListFromTask {
 	Builder& builder;
 	std::string key;
 	task_p t;
 	bool isSet;
 public:
-	BuilderStrList(Builder* builder, const std::string& key) :
+	StrListFromTask(Builder* builder, const std::string& key) :
 		builder(*builder),
 		key(key),
 		isSet(false)
 	{}
-	BuilderStrList(Builder* builder, const std::string& key, task_p defaultTask) :
+	StrListFromTask(Builder* builder, const std::string& key, task_p defaultTask) :
 		builder(*builder),
 		key(key),
 		t(defaultTask),
@@ -151,4 +158,5 @@ public:
 	}
 };
 
+} // namespace builder
 } // namespace cradle

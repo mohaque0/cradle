@@ -10,15 +10,20 @@
 #include <vector>
 #include <unordered_map>
 
-#define build_config                   \
-	void configure();                  \
-	int main(int argc, char** argv) {  \
-	  log("Cradle Version 0.1");       \
-	  parseCmdLineArgs(argc, argv);    \
-	  configure();                     \
-	  executor->execute();             \
-	  return 0;                        \
-	}                                  \
+#define build_config                          \
+	namespace cradle {                        \
+		std::string getBuildConfigFile() {    \
+			return __FILE__;                  \
+		}                                     \
+	}                                         \
+	void configure();                         \
+	int main(int argc, char** argv) {         \
+	  log("Cradle Version v0.1-alpha");       \
+	  parseCmdLineArgs(argc, argv);           \
+	  configure();                            \
+	  executor->execute();                    \
+	  return 0;                               \
+	}                                         \
 	void configure()
 
 namespace cradle {
@@ -32,6 +37,10 @@ typedef std::shared_ptr<Task> task_p;
 void log(const std::string& msg);
 void log_error(const std::string& msg);
 
+/**
+ * @return The absolute path to build.cpp.
+ */
+std::string getBuildConfigFile();
 
 enum class ExecutionResult {
 	SUCCESS,
