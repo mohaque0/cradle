@@ -22,7 +22,7 @@
 	}                                         \
 	void configure();                         \
 	int main(int argc, char** argv) {         \
-	  log("Cradle Version v0.1-alpha");       \
+	  log("Cradle Version v0.2-alpha");       \
 	  cradle::platform::platform_chdir(cradle::io::path_parent(getBuildConfigFile())); \
 	  parseCmdLineArgs(argc, argv);           \
 	  configure();                            \
