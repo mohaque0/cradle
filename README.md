@@ -6,21 +6,33 @@ Cradle is a tool for building projects using the components already available on
 # Example
 This is an example of the configuration to build a simple project that consists of a static library under `test/lib` and other source files under `test/main`.
 ```cpp
-#include <builder.hpp>
+#include <cradle.hpp>
+
+using namespace cradle;
 
 build_config {
-    auto lib = cpp::static_lib()
-            .name("static_lib")
-            .sourceFiles(io::files("test/lib", ".*.cpp"))
-            .includeSearchDirs({"test"})
-            .build();
+	auto conan = conan::conan_install()
+			.name("conan")
+			.pathToConanfile(".")
+			.setting(platform::os::is_windows() ? "compiler.runtime=MT" : "")
+			.build();
 
-    auto exe = cpp::exe()
-            .name("main")
-            .sourceFiles(io::files("test/main", ".*.cpp", ".*/build.cpp"))
-            .includeSearchDirs(listOf(io::FILE_LIST, {"includes", "test"}))
-            .linkLibraryTasks(lib)
-            .build();
+	auto lib = cpp::static_lib()
+			.name("static_lib")
+			.sourceFiles(io::FILE_LIST, io::files("lib", ".*.cpp"))
+			.includeSearchDirs({"."})
+			.includeSearchDirs(conan::INCLUDEDIRS, conan)
+			.build();
+
+	auto exe = cpp::exe()
+			.name("test_exec")
+			.sourceFiles(io::FILE_LIST, io::files("main", ".*.cpp", ".*/build.cpp"))
+			.includeSearchDirs(io::FILE_LIST, listOf(io::FILE_LIST, {"."}))
+			.linkLibrary(cpp::LIBRARY_NAME, lib)
+			.linklibrarySearchPath(cpp::LIBRARY_PATH, lib)
+			.linkLibrary(conan::LIBS, conan)
+			.linklibrarySearchPath(conan::LIBDIRS, conan)
+			.build();
 }
 ```
 
@@ -35,7 +47,7 @@ cl build.cpp /I<path to folder containing builder.hpp> /Febuilder.exe
 
 Then one executes the builder with the target name as an argument:
 ```
-./builder main
+./builder test_exec
 ```
 
 # Building Cradle
