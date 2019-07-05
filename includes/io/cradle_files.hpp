@@ -97,6 +97,12 @@ void mkdirs(std::string d) {
 	if (d == std::string(1, PATH_SEP)) {
 		return;
 	}
+	if (d == "..") {
+		return;
+	}
+	if (d == ".") {
+		return;
+	}
 
 	mkdirs(path_parent(d));
 	mkdir_if_necessary(d);
