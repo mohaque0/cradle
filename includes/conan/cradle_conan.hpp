@@ -70,7 +70,7 @@ task_p conan_install(
 		cmd += " " + pathToConanfile;
 
 		for (auto& opt : options) {
-			if (!option.empty()) {
+			if (!opt.empty()) {
 				cmd += " -o " + opt;
 			}
 		}
