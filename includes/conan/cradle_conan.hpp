@@ -70,10 +70,14 @@ task_p conan_install(
 		cmd += " " + pathToConanfile;
 
 		for (auto& opt : options) {
-			cmd += " -o " + opt;
+			if (!option.empty()) {
+				cmd += " -o " + opt;
+			}
 		}
 		for (auto& setting : settings) {
-			cmd += " -s " + setting;
+			if (!setting.empty()) {
+				cmd += " -s " + setting;
+			}
 		}
 
 		if (exec(cmd)->execute() == ExecutionResult::FAILURE) {

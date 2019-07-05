@@ -5,7 +5,8 @@ using namespace cradle;
 build_config {
 	auto conan = conan::conan_install()
 			.name("conan")
-			.pathToConanfile(".")
+			.pathToConanfile(".");
+			.setting(platform::os::is_windows() ? "compiler.runtime=MT" : "")
 			.build();
 
     auto lib = cpp::static_lib()

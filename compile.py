@@ -30,6 +30,7 @@ def create_context():
         for filename in files:
             header_file_path = os.path.join(dirname, filename)
             key = header_file_path[len(INCLUDE_SEARCH_PATH + "/"):]
+            key = key.replace("\\", "/")
 
             headers[key] = HeaderFile(header_file_path)
 

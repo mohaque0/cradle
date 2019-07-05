@@ -38,7 +38,7 @@ namespace detail {
 	std::string listToArgs(const std::string& prefix, const std::vector<std::string>& items) {
 		std::string cmdline = "";
 		for (auto i : items) {
-			cmdline += " " + prefix + i;
+            cmdline += " " + prefix + "\"" + i + "\"";
 		}
 		return cmdline + " ";
 	}

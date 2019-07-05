@@ -3,6 +3,7 @@
 #include <platform/cradle_platform.hpp>
 
 #include <memory>
+#include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
 
