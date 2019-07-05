@@ -121,6 +121,27 @@ class StrListFromTask {
 	std::string key;
 	task_p t;
 	bool isSet;
+
+	static void pushValuesToList(Task& dst, const std::string& dstKey, task_p src, const std::string& srcKey) {
+		bool foundValue = false;
+		if (src->has(srcKey)) {
+			dst.push(dstKey, src->get(srcKey));
+			foundValue = true;
+		}
+		if (src->hasList(srcKey)) {
+			dst.push(dstKey, src->getList(srcKey));
+			foundValue = true;
+		}
+
+		if (!foundValue) {
+			throw std::runtime_error(
+						"Attempting to get value " + srcKey +
+						" from task " + (src->name().empty() ? "" : "with name \"" + src->name() + "\" ")  +
+						"but it is not defined."
+			);
+		}
+	}
+
 public:
 	StrListFromTask(Builder* builder, const std::string& key) :
 		builder(*builder),
@@ -134,31 +155,47 @@ public:
 		isSet(true)
 	{}
 	Builder& operator() (std::initializer_list<std::string> values) {
-		return (*this)(listOf(key, values));
+		return (*this)(key, listOf(key, values));
 	}
 	Builder& operator() (const std::string& value) {
-		return (*this)(listOf(key, {value}));
+		return (*this)(key, listOf(key, {value}));
 	}
 
 	/**
-	 * Adds all the values in {@code t->getList(key)} to this parameter.
+	 * Adds all the values in {@code newTask->getList(key)} if any and the single value in
+	 * {@code newTask->get(key)} if any to this parameter.
 	 * @brief operator ()
-	 * @param t
+	 * @param key
+	 * @param newTask
 	 * @return
 	 */
-	Builder& operator() (task_p t) {
+	Builder& operator() (const std::string& key, task_p newTask) {
 		if (!isSet) {
-			this->t = t;
-		} else {
-			std::string k = key;
-			task_p t0 = this->t;
-			this->t = task([k, t0, t] (Task* self) {
-				self->push(k, t0->getList(k));
-				self->push(k, t->getList(k));
+
+			std::string newTaskKey = key;
+			std::string origTaskKey = this->key;
+
+			this->t = task([newTaskKey, origTaskKey, newTask] (Task* self) {
+				StrListFromTask::pushValuesToList(*self, origTaskKey, newTask, newTaskKey);
 				return ExecutionResult::SUCCESS;
 			});
-			this->t->dependsOn(t0);
-			this->t->dependsOn(t);
+
+			this->t->dependsOn(newTask);
+
+		} else {
+
+			std::string newTaskKey = key;
+			std::string origTaskKey = this->key;
+			task_p origTask = this->t;
+
+			this->t = task([origTaskKey, newTaskKey, origTask, newTask] (Task* self) {
+				StrListFromTask::pushValuesToList(*self, origTaskKey, origTask, origTaskKey);
+				StrListFromTask::pushValuesToList(*self, origTaskKey, newTask, newTaskKey);
+				return ExecutionResult::SUCCESS;
+			});
+			this->t->dependsOn(origTask);
+			this->t->dependsOn(newTask);
+
 		}
 		this->isSet = true;
 		return builder;

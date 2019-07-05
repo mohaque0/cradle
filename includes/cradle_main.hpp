@@ -6,9 +6,11 @@
 
 #include <platform/cradle_platform_util.hpp>
 
+#include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <queue>
+#include <sstream>
 #include <vector>
 #include <unordered_map>
 
@@ -62,12 +64,19 @@ public:
 	Task(std::string name) : name_(name) {}
 	virtual ~Task() {}
 
-	std::string name() { return name_; }
+	std::string name() const { return name_; }
+	std::string addr() const {
+		std::stringstream buffer;
+		buffer << reinterpret_cast<const void*>(this);
+		return buffer.str();
+	}
 
 	void dependsOn(task_p other) { dependencies_.push_back(other); }
+	void dependsOn(std::vector<task_p>& others) { dependencies_.insert(dependencies_.end(), others.begin(), others.end()); }
 	const std::vector<task_p> dependencies() const { return dependencies_; }
-    void followedBy(task_p other) { followingTasks_.push_back(other); }
-    const std::vector<task_p> followingTasks() const { return followingTasks_; }
+	void followedBy(task_p other) { followingTasks_.push_back(other); }
+	void followedBy(std::vector<task_p>& others) { followingTasks_.insert(followingTasks_.end(), others.begin(), others.end()); }
+	const std::vector<task_p> followingTasks() const { return followingTasks_; }
 
 	//
 	// Single-valued properties.
@@ -129,6 +138,29 @@ class Executor {
 	std::unordered_map<std::string, task_p> tasks_;
 	std::queue<std::string> taskNamesToExecute_;
 
+	/**
+	 * Check that `toCheck` doesn't have a cyclic dependency given that we've already seen `seen`.
+	 * Assumes `toCheck` was not pushed onto `seen`.
+	 */
+	void checkForCycles(Task* toCheck, std::vector<Task*>& seen) {
+		if (std::find(seen.begin(), seen.end(), toCheck) != seen.end()) {
+			log("Cycle found:");
+			for (Task* t : seen) {
+				log(std::string() + (t == toCheck ? "*" : "") + "\t" + t->name());
+			}
+			log("*\t" + toCheck->name());
+			throw std::runtime_error("Cycle found.");
+		}
+
+		seen.push_back(toCheck);
+
+		for (task_p dep : toCheck->dependencies()) {
+			checkForCycles(dep.get(), seen);
+		}
+
+		seen.pop_back();
+	}
+
 public:
 	virtual ~Executor() {}
 	virtual ExecutionResult execute() = 0;
@@ -155,6 +187,13 @@ public:
 	void queue(std::string name) {
 		taskNamesToExecute_.push(name);
 	}
+
+	void checkForCycles() {
+		for (auto& t : tasks()) {
+			auto seen = std::vector<Task*>();
+			checkForCycles(t.second.get(), seen);
+		}
+	}
 };
 
 class SingleThreadedExecutor : public Executor {
@@ -175,6 +214,8 @@ class SingleThreadedExecutor : public Executor {
 	}
 
 	ExecutionResult execute(task_p t) {
+		checkForCycles();
+
 		// Don't repeat a task twice.
 		if (wasExecuted(t)) {
 			return results[t];

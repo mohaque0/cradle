@@ -19,6 +19,7 @@ namespace cpp {
 
 static const std::string OUTPUT_FILE = "OUTPUT_FILE";
 static const std::string LIBRARY_NAME = "LIBRARY_NAME";
+static const std::string LIBRARY_PATH = "LIBRARY_PATH";
 
 namespace detail {
 
@@ -36,7 +37,7 @@ bool strendswith(const std::string& str, const std::string& end) {
 	return true;
 }
 
-bool needsRebuildAgainstHeadersInDir(const struct stat& targetFileStat, const std::string& path) {
+bool isTargetLessRecentThanHeaderFiles(const struct stat& targetFileStat, const std::string& path) {
 	tinydir_dir dir;
 	tinydir_open(&dir, path.c_str());
 
@@ -53,7 +54,7 @@ bool needsRebuildAgainstHeadersInDir(const struct stat& targetFileStat, const st
 		}
 
 		if (file.is_dir) {
-			if (needsRebuildAgainstHeadersInDir(targetFileStat, file.path)) {
+			if (isTargetLessRecentThanHeaderFiles(targetFileStat, file.path)) {
 				return true;
 			}
 
@@ -76,7 +77,7 @@ bool needsRebuildAgainstHeadersInDir(const struct stat& targetFileStat, const st
 	return false;
 }
 
-bool needsRebuild(const std::string& targetFile, const std::string& sourceFile, const std::vector<std::string>& includeSearchDirs) {
+bool isTargetLessRecentThanSources(const std::string& targetFile, const std::string& sourceFile, const std::vector<std::string>& includeSearchDirs) {
 	if (!io::exists(targetFile)) {
 		return true;
 	}
@@ -89,7 +90,7 @@ bool needsRebuild(const std::string& targetFile, const std::string& sourceFile, 
 	}
 
 	for (auto& dir : includeSearchDirs) {
-		if (needsRebuildAgainstHeadersInDir(targetFileStat, dir)) {
+		if (isTargetLessRecentThanHeaderFiles(targetFileStat, dir)) {
 			return true;
 		}
 	}
@@ -97,7 +98,7 @@ bool needsRebuild(const std::string& targetFile, const std::string& sourceFile, 
 	return false;
 }
 
-bool needsRebuild(const std::string& targetFile, const std::vector<std::string>& files) {
+bool isTargetLessRecentThanSources(const std::string& targetFile, const std::vector<std::string>& files) {
 	if (!io::exists(targetFile)) {
 		return true;
 	}
@@ -115,6 +116,17 @@ bool needsRebuild(const std::string& targetFile, const std::vector<std::string>&
 	return false;
 }
 
+std::string resolveFile(const std::string& name, const std::vector<std::string>& paths) {
+	for (auto& path : paths) {
+		std::string fileCandidate = io::path_concat(path, name);
+		if (io::exists(fileCandidate)) {
+			return fileCandidate;
+		}
+	}
+
+	return name;
+}
+
 
 task_p object(
 	std::string rootTaskName,
@@ -127,7 +139,7 @@ task_p object(
 		std::string outputFile = io::path_concat(outputDirectory, toolchain->objectFileNameFromBase(filePath));
 		self->set(OUTPUT_FILE, outputFile);
 
-		if (needsRebuild(outputFile, filePath, includeSearchDirs)) {
+		if (isTargetLessRecentThanSources(outputFile, filePath, includeSearchDirs)) {
 
 			std::string cmdline = toolchain->compileObjectCmd(outputFile, filePath, includeSearchDirs);
 			io::mkdirs(io::path_parent(outputFile));
@@ -162,7 +174,7 @@ task_p static_lib(
 			objectFiles.push_back(task->get(OUTPUT_FILE));
 		}
 
-		if (needsRebuild(outputFile, objectFiles)) {
+		if (isTargetLessRecentThanSources(outputFile, objectFiles)) {
 			std::string cmdline = toolchain->buildStaticLibCmd(outputFile, objectFiles);
 			io::mkdirs(io::path_parent(outputFile));
 			return exec(cmdline)->execute();
@@ -172,6 +184,7 @@ task_p static_lib(
 	});
 
 	buildArchive->set(LIBRARY_NAME, name);
+	buildArchive->set(LIBRARY_PATH, io::path_parent(outputFile));
 	buildArchive->set(OUTPUT_FILE, outputFile);
 
 	for (auto t : objectFileTasks) {
@@ -186,8 +199,8 @@ task_p exe(
 	std::string name,
 	std::vector<std::string> sourceFiles,
 	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
-	std::vector<task_p> linkLibraryTasks = std::vector<task_p>(),
-	std::vector<std::string> librarySearchPathList = std::vector<std::string>(),
+	std::vector<std::string> libraryNames = std::vector<std::string>(),
+	std::vector<std::string> librarySearchPaths = std::vector<std::string>(),
 	std::string outputDirectory = "build",
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
@@ -205,27 +218,20 @@ task_p exe(
 			objectFiles.push_back(task->get(OUTPUT_FILE));
 		}
 
-		std::vector<std::string> linkLibraries;
-		std::vector<std::string> linkLibraryNames;
-		std::vector<std::string> linkLibraryPaths;
-		for (auto task : linkLibraryTasks) {
-			linkLibraries.push_back(task->get(OUTPUT_FILE));
-			linkLibraryNames.push_back(task->get(LIBRARY_NAME));
-			linkLibraryPaths.push_back(io::path_parent(task->get(OUTPUT_FILE)));
+		std::vector<std::string> libraryFiles;
+		for (const auto& lib : libraryNames) {
+			libraryFiles.push_back(detail::resolveFile(toolchain->staticLibNameFromBase(lib), librarySearchPaths));
 		}
 
-		std::vector<std::string> librarySearchPaths = std::vector<std::string>(librarySearchPathList);
-		librarySearchPaths.insert(librarySearchPaths.end(), linkLibraryPaths.begin(), linkLibraryPaths.end());
-
 		if (
-			needsRebuild(outputFile, objectFiles) ||
-			needsRebuild(outputFile, linkLibraries)
+			isTargetLessRecentThanSources(outputFile, objectFiles) ||
+			isTargetLessRecentThanSources(outputFile, libraryFiles)
 		) {
 			std::string cmdline = toolchain->linkExeCmd(
 				outputFile,
 				objectFiles,
 				includeSearchDirs,
-				linkLibraryNames,
+				libraryNames,
 				librarySearchPaths
 			);
 
@@ -237,12 +243,7 @@ task_p exe(
 		}
 	});
 
-	for (auto t : objectFileTasks) {
-		link->dependsOn(t);
-	}
-	for (auto t : linkLibraryTasks) {
-		link->dependsOn(t);
-	}
+	link->dependsOn(objectFileTasks);
 
 	return link;
 }
@@ -281,6 +282,7 @@ task_p static_lib(
 		self->followedBy(buildArchive);
 		self->followedBy(task([self, buildArchive] (Task* _) {
 			self->set(LIBRARY_NAME, buildArchive->get(LIBRARY_NAME));
+			self->set(LIBRARY_PATH, buildArchive->get(LIBRARY_PATH));
 			self->set(OUTPUT_FILE, buildArchive->get(OUTPUT_FILE));
 			return ExecutionResult::SUCCESS;
 		}));
@@ -313,22 +315,10 @@ StaticLibBuilder static_lib() {
 
 task_p exe(
 	std::string name,
-	std::vector<std::string> sourceFiles,
-	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
-	std::vector<task_p> linkLibraryTasks = std::vector<task_p>(),
-	std::vector<std::string> librarySearchPathList = std::vector<std::string>(),
-	std::string outputDirectory = "build",
-	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
-) {
-	return detail::exe(name, name, sourceFiles, includeSearchDirs, linkLibraryTasks, librarySearchPathList, outputDirectory, toolchain);
-}
-
-task_p exe(
-	std::string name,
 	task_p sourceFiles,
 	task_p includeSearchDirs = emptyList(io::FILE_LIST),
-	std::vector<task_p> linkLibraryTasks = std::vector<task_p>(),
-	task_p librarySearchPathList = emptyList(io::FILE_LIST),
+	task_p linkLibraries = emptyList(LIBRARY_NAME),
+	task_p linkLibraryPaths = emptyList(LIBRARY_PATH),
 	std::string outputDirectory = "build",
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
@@ -339,8 +329,8 @@ task_p exe(
 			name,
 			sourceFiles->getList(io::FILE_LIST),
 			includeSearchDirs->getList(io::FILE_LIST),
-			linkLibraryTasks,
-			librarySearchPathList->getList(io::FILE_LIST),
+			linkLibraries->getList(LIBRARY_NAME),
+			linkLibraryPaths->getList(LIBRARY_PATH),
 			outputDirectory,
 			toolchain
 		);
@@ -352,10 +342,8 @@ task_p exe(
 
 	configure->dependsOn(sourceFiles);
 	configure->dependsOn(includeSearchDirs);
-	for (auto t : linkLibraryTasks) {
-		configure->dependsOn(t);
-	}
-	configure->dependsOn(librarySearchPathList);
+	configure->dependsOn(linkLibraries);
+	configure->dependsOn(linkLibraryPaths);
 
 	return configure;
 }
@@ -363,25 +351,25 @@ task_p exe(
 
 class ExeBuilder {
 public:
-	builder::Value<ExeBuilder, std::string> name{this};
+	builder::Str<ExeBuilder> name{this};
 	builder::StrListFromTask<ExeBuilder> sourceFiles{this, io::FILE_LIST};
 	builder::StrListFromTask<ExeBuilder> includeSearchDirs{this, io::FILE_LIST};
-	builder::List<ExeBuilder, task_p> linkLibraryTasks{this, {}};
-	builder::StrListFromTask<ExeBuilder> librarySearchPathList{this, io::FILE_LIST, emptyList(io::FILE_LIST)};
-	builder::Value<ExeBuilder, std::string> outputDirectory{this, "build"};
+	builder::StrListFromTask<ExeBuilder> linkLibrary{this, LIBRARY_NAME, emptyList(LIBRARY_NAME)};
+	builder::StrListFromTask<ExeBuilder> linklibrarySearchPath{this, LIBRARY_PATH, emptyList(LIBRARY_PATH)};
+	builder::Str<ExeBuilder> outputDirectory{this, "build"};
 	builder::Value<ExeBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
-    task_p build() {
-        return exe(
-            name,
-            sourceFiles,
-            includeSearchDirs,
-            linkLibraryTasks,
-            librarySearchPathList,
-            outputDirectory,
-            toolchain
-        );
-    }
+	task_p build() {
+		return exe(
+			name,
+			sourceFiles,
+			includeSearchDirs,
+			linkLibrary,
+			linklibrarySearchPath,
+			outputDirectory,
+			toolchain
+		);
+	}
 };
 
 ExeBuilder exe() {
