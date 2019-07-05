@@ -77,7 +77,7 @@ bool isTargetLessRecentThanHeaderFiles(const struct stat& targetFileStat, const 
 	return false;
 }
 
-bool isTargetLessRecentThanSources(const std::string& targetFile, const std::string& sourceFile, const std::vector<std::string>& includeSearchDirs) {
+bool isTargetLessRecentThanFiles(const std::string& targetFile, const std::string& sourceFile, const std::vector<std::string>& includeSearchDirs) {
 	if (!io::exists(targetFile)) {
 		return true;
 	}
@@ -98,7 +98,7 @@ bool isTargetLessRecentThanSources(const std::string& targetFile, const std::str
 	return false;
 }
 
-bool isTargetLessRecentThanSources(const std::string& targetFile, const std::vector<std::string>& files) {
+bool isTargetLessRecentThanFiles(const std::string& targetFile, const std::vector<std::string>& files) {
 	if (!io::exists(targetFile)) {
 		return true;
 	}
@@ -106,6 +106,12 @@ bool isTargetLessRecentThanSources(const std::string& targetFile, const std::vec
 	const struct stat targetFileStat = io::getStat(targetFile);
 
 	for (auto& sourceFile : files) {
+		// TODO: This conditional is here to prevent attempting to get stats of system libraries like pthread.
+		// There should perhaps be a better solution than skipping it.
+		if (!io::exists(sourceFile)) {
+			continue;
+		}
+
 		const struct stat sourceFileStat = io::getStat(sourceFile);
 
 		if (difftime(targetFileStat.st_mtime, sourceFileStat.st_mtime) < 0) {
@@ -139,7 +145,7 @@ task_p object(
 		std::string outputFile = io::path_concat(outputDirectory, toolchain->objectFileNameFromBase(filePath));
 		self->set(OUTPUT_FILE, outputFile);
 
-		if (isTargetLessRecentThanSources(outputFile, filePath, includeSearchDirs)) {
+		if (isTargetLessRecentThanFiles(outputFile, filePath, includeSearchDirs)) {
 
 			std::string cmdline = toolchain->compileObjectCmd(outputFile, filePath, includeSearchDirs);
 			io::mkdirs(io::path_parent(outputFile));
@@ -174,7 +180,7 @@ task_p static_lib(
 			objectFiles.push_back(task->get(OUTPUT_FILE));
 		}
 
-		if (isTargetLessRecentThanSources(outputFile, objectFiles)) {
+		if (isTargetLessRecentThanFiles(outputFile, objectFiles)) {
 			std::string cmdline = toolchain->buildStaticLibCmd(outputFile, objectFiles);
 			io::mkdirs(io::path_parent(outputFile));
 			return exec(cmdline)->execute();
@@ -224,8 +230,8 @@ task_p exe(
 		}
 
 		if (
-			isTargetLessRecentThanSources(outputFile, objectFiles) ||
-			isTargetLessRecentThanSources(outputFile, libraryFiles)
+			isTargetLessRecentThanFiles(outputFile, objectFiles) ||
+			isTargetLessRecentThanFiles(outputFile, libraryFiles)
 		) {
 			std::string cmdline = toolchain->linkExeCmd(
 				outputFile,
