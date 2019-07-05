@@ -5,7 +5,6 @@ using namespace cradle;
 build_config {
 	auto conan = conan::conan_install()
 			.name("conan")
-			.installFolder("build")
 			.pathToConanfile(".")
 			.build();
 
@@ -13,6 +12,7 @@ build_config {
             .name("static_lib")
 			.sourceFiles(io::FILE_LIST, io::files("lib", ".*.cpp"))
 			.includeSearchDirs({"."})
+			.includeSearchDirs(conan::INCLUDEDIRS, conan)
             .build();
 
     auto exe = cpp::exe()
@@ -21,6 +21,7 @@ build_config {
 			.includeSearchDirs(io::FILE_LIST, listOf(io::FILE_LIST, {"."}))
 			.linkLibrary(cpp::LIBRARY_NAME, lib)
 			.linklibrarySearchPath(cpp::LIBRARY_PATH, lib)
-			//.linkLibrary(conan::LIBS, conan)
+			.linkLibrary(conan::LIBS, conan)
+			.linklibrarySearchPath(conan::LIBDIRS, conan)
             .build();
 }
