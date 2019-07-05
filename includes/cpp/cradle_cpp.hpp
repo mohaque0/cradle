@@ -132,7 +132,7 @@ task_p object(
 	std::string rootTaskName,
 	std::string filePath,
 	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
-	std::string outputDirectory = "build",
+	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 	auto configure = task(rootTaskName + ':' + filePath + ":compile", [=] (Task* self) {
@@ -158,7 +158,7 @@ task_p static_lib(
 	std::string name,
 	std::vector<std::string> sourceFiles,
 	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
-	std::string outputDirectory = "build",
+	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 	std::string outputFile(io::path_concat(outputDirectory, toolchain->staticLibNameFromBase(name)));
@@ -201,7 +201,7 @@ task_p exe(
 	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
 	std::vector<std::string> libraryNames = std::vector<std::string>(),
 	std::vector<std::string> librarySearchPaths = std::vector<std::string>(),
-	std::string outputDirectory = "build",
+	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 	std::string outputFile(io::path_concat(outputDirectory, name));
@@ -254,7 +254,7 @@ task_p static_lib(
 	std::string name,
 	std::vector<std::string> sourceFiles,
 	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
-	std::string outputDirectory = "build",
+	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 	return detail::static_lib(name, name, sourceFiles, includeSearchDirs, outputDirectory, toolchain);
@@ -264,7 +264,7 @@ task_p static_lib(
 	std::string name,
 	task_p sourceFiles,
 	task_p includeSearchDirs = emptyList(io::FILE_LIST),
-	std::string outputDirectory = "build",
+	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 
@@ -301,7 +301,7 @@ public:
 	builder::Value<StaticLibBuilder, std::string> name{this};
 	builder::StrListFromTask<StaticLibBuilder> sourceFiles{this, io::FILE_LIST};
 	builder::StrListFromTask<StaticLibBuilder> includeSearchDirs{this, io::FILE_LIST};
-	builder::Value<StaticLibBuilder, std::string> outputDirectory{this, "build"};
+	builder::Value<StaticLibBuilder, std::string> outputDirectory{this, DEFAULT_BUILD_DIR};
 	builder::Value<StaticLibBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
     task_p build() {
@@ -319,7 +319,7 @@ task_p exe(
 	task_p includeSearchDirs = emptyList(io::FILE_LIST),
 	task_p linkLibraries = emptyList(LIBRARY_NAME),
 	task_p linkLibraryPaths = emptyList(LIBRARY_PATH),
-	std::string outputDirectory = "build",
+	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
 	task_p configure = task(name, [=] (Task* self) {
@@ -356,7 +356,7 @@ public:
 	builder::StrListFromTask<ExeBuilder> includeSearchDirs{this, io::FILE_LIST};
 	builder::StrListFromTask<ExeBuilder> linkLibrary{this, LIBRARY_NAME, emptyList(LIBRARY_NAME)};
 	builder::StrListFromTask<ExeBuilder> linklibrarySearchPath{this, LIBRARY_PATH, emptyList(LIBRARY_PATH)};
-	builder::Str<ExeBuilder> outputDirectory{this, "build"};
+	builder::Str<ExeBuilder> outputDirectory{this, DEFAULT_BUILD_DIR};
 	builder::Value<ExeBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
 	task_p build() {

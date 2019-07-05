@@ -13,6 +13,10 @@
 namespace cradle {
 namespace conan {
 
+static const std::string INCLUDEDIRS = "includedirs";
+static const std::string LIBDIRS = "libdirs";
+static const std::string LIBS = "libs";
+
 task_p conan_install(
 		std::string name,
 		std::string installFolder,
@@ -25,8 +29,8 @@ task_p conan_install(
 class ConanInstallBuilder {
 public:
 	builder::Str<ConanInstallBuilder> name{this};
-	builder::Str<ConanInstallBuilder> installFolder{this};
 	builder::Str<ConanInstallBuilder> pathToConanfile{this};
+	builder::Str<ConanInstallBuilder> installFolder{this, DEFAULT_BUILD_DIR};
 
 	/**
 	 * Set the value of `--build` passed to Conan. The default is `--build=missing`.
@@ -82,6 +86,8 @@ task_p conan_install(
 		while (std::getline(conanbuildinfo, line)) {
 			if (line.length() >= 2 && line[0] == '[' && line[line.length()-1] == ']') {
 				section = line.substr(1, line.length()-2);
+				continue;
+			} else if (line.empty()) {
 				continue;
 			}
 

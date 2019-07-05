@@ -33,6 +33,8 @@
 
 namespace cradle {
 
+static const std::string DEFAULT_BUILD_DIR = "build";
+
 class Executor;
 class SingleThreadedExecutor;
 class Task;
