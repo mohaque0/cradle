@@ -36,18 +36,18 @@ build_config {
 }
 ```
 
-Then one simply builds the builder as a single source (`build.cpp`) and header file (`builder.hpp`). For example:
+Then one simply builds the builder as a single source (`build.cpp`) and header file (`cradle.hpp`). For example:
 ```sh
-${CXX} build.cpp -I<path to folder containing builder.hpp> -std=c++14 -g -o builder.out
+${CXX} build.cpp -I<path to folder containing cradle.hpp> -std=c++14 -g -o cradle.out
 ```
 or on Windows (MSVC):
 ```bat
-cl build.cpp /I<path to folder containing builder.hpp> /Febuilder.exe
+cl build.cpp /I<path to folder containing cradle.hpp> /Fecradle.exe
 ```
 
 Then one executes the builder with the target name as an argument:
 ```
-./builder test_exec
+./cradle test_exec
 ```
 
 # Building Cradle
