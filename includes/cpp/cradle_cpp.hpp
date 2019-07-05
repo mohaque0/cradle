@@ -141,7 +141,7 @@ task_p object(
 	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
-	auto configure = task(rootTaskName + ':' + filePath + ":compile", [=] (Task* self) {
+	auto compile = task(rootTaskName + ':' + filePath + ":compile", [=] (Task* self) {
 		std::string outputFile = io::path_concat(outputDirectory, toolchain->objectFileNameFromBase(filePath));
 		self->set(OUTPUT_FILE, outputFile);
 
@@ -156,7 +156,7 @@ task_p object(
 		}
 	});
 
-	return configure;
+	return compile;
 }
 
 task_p static_lib(
@@ -255,16 +255,6 @@ task_p exe(
 }
 
 } // namespace detail
-
-task_p static_lib(
-	std::string name,
-	std::vector<std::string> sourceFiles,
-	std::vector<std::string> includeSearchDirs = std::vector<std::string>(),
-	std::string outputDirectory = DEFAULT_BUILD_DIR,
-	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
-) {
-	return detail::static_lib(name, name, sourceFiles, includeSearchDirs, outputDirectory, toolchain);
-}
 
 task_p static_lib(
 	std::string name,
