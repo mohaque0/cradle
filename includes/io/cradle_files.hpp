@@ -20,15 +20,6 @@ namespace io {
 
 static const std::string FILE_LIST = "FILE_LIST";
 
-//
-// Platform dependent section.
-//
-
-//
-// End platform dependent section.
-//
-
-
 // TODO: Do something smarter to handle volume names and other things.
 std::string path_concat(std::string a, std::string b) {
 	return a + PATH_SEP + b;
@@ -36,17 +27,20 @@ std::string path_concat(std::string a, std::string b) {
 
 // TODO: Do something smarter to handle volume names and other things.
 std::string path_parent(std::string p) {
-    std::size_t posA = p.find_last_of(PATH_SEP);
-    std::size_t posB = p.find_last_of('/');
+	std::size_t posA = p.find_last_of(PATH_SEP);
+	std::size_t posB = p.find_last_of('/');
 
-    std::size_t pos =
-            (posA != std::string::npos && posB != std::string::npos) ?
+	std::size_t pos =
+			(posA != std::string::npos && posB != std::string::npos) ?
 				std::max(posA, posB) : // If they're both valid return the max.
-                (posA == std::string::npos ? posB : posA); // Otherwise return the valid one (technically, could still be invalid.)
+				(posA == std::string::npos ? posB : posA); // Otherwise return the valid one (note both could still be invalid.)
 
-    // Check pos isn't invalid.
+	// If pos still invalid the path separator doesn't exist in this path.
 	if (pos == std::string::npos) {
-		return std::string(1, PATH_SEP);
+		if (p.empty() || p == ".") {
+			return "..";
+		}
+		return ".";
 	}
 	return p.substr(0, pos);
 }
