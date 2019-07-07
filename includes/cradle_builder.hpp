@@ -105,14 +105,50 @@ public:
 };
 
 template <typename Builder>
-class StrFromTask : public Value<Builder, task_p> {
+class StrFromTask {
+	Builder& builder;
+	std::string key;
+	task_p t;
+	bool isSet;
+
 public:
+	StrFromTask(Builder* builder, const std::string& key) :
+		builder(*builder),
+		key(key),
+		isSet(false)
+	{}
+
+	StrFromTask(Builder* builder, const std::string& key, task_p defaultTask) :
+		builder(*builder),
+		key(key),
+		t(defaultTask),
+		isSet(true)
+	{}
+
 	StrFromTask(Builder* builder, std::string key, std::string defaultValue) :
-		Value<Builder, task_p>(
+		StrFromTask(
 			*builder,
+			key,
 			[key, defaultValue] (Task* self) { self->set(key, defaultValue); return ExecutionResult::SUCCESS; }
 		)
 	{}
+
+	Builder& operator() (const std::string& key, task_p newTask) {
+		std::string newTaskKey = key;
+		std::string origTaskKey = this->key;
+
+		this->t = task([newTaskKey, origTaskKey, newTask] (Task* self) {
+			self->set(origTaskKey, newTask->get(origTaskKey));
+			return ExecutionResult::SUCCESS;
+		});
+
+		this->t->dependsOn(newTask);
+	}
+
+	operator task_p() const {
+		if (!isSet) throw new std::runtime_error("Attempting to access unset value.");
+		return t;
+	}
 };
 
 template <typename Builder>
@@ -148,15 +184,18 @@ public:
 		key(key),
 		isSet(false)
 	{}
+
 	StrListFromTask(Builder* builder, const std::string& key, task_p defaultTask) :
 		builder(*builder),
 		key(key),
 		t(defaultTask),
 		isSet(true)
 	{}
+
 	Builder& operator() (std::initializer_list<std::string> values) {
 		return (*this)(key, listOf(key, values));
 	}
+
 	Builder& operator() (const std::string& value) {
 		return (*this)(key, listOf(key, {value}));
 	}
@@ -200,6 +239,13 @@ public:
 		this->isSet = true;
 		return builder;
 	}
+
+	Builder& operator() (const std::string& key, std::initializer_list<task_p> tasks) {
+		for (auto newTask : tasks) {
+			(*this)(key, tasks);
+		}
+	}
+
 	operator task_p() const {
 		if (!isSet) throw new std::runtime_error("Attempting to access unset value.");
 		return t;

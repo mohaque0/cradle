@@ -85,12 +85,12 @@ std::string path_ext(std::string p) {
 }
 
 void mkdir_if_necessary(std::string d) {
-    tinydir_dir dir;
-    if (tinydir_open(&dir, d.c_str()) != 0) {
+	tinydir_dir dir;
+	if (tinydir_open(&dir, d.c_str()) != 0) {
 		if (platform::platform_mkdir(d.c_str()) != 0) {
-            printf("Error making directory %s: %s", d.c_str(), strerror(errno));
-        }
-    }
+			log_error(std::string() + "Error making directory " + d.c_str() + ": " + strerror(errno));
+		}
+	}
 }
 
 void mkdirs(std::string d) {

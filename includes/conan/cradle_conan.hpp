@@ -13,6 +13,7 @@
 namespace cradle {
 namespace conan {
 
+static const std::string BUILDDIRS = "builddirs";
 static const std::string INCLUDEDIRS = "includedirs";
 static const std::string LIBDIRS = "libdirs";
 static const std::string LIBS = "libs";

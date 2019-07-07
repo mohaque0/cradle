@@ -75,9 +75,11 @@ public:
 
 	void dependsOn(task_p other) { dependencies_.push_back(other); }
 	void dependsOn(std::vector<task_p>& others) { dependencies_.insert(dependencies_.end(), others.begin(), others.end()); }
+	void dependsOn(std::initializer_list<task_p> others) { dependencies_.insert(dependencies_.end(), others.begin(), others.end()); }
 	const std::vector<task_p> dependencies() const { return dependencies_; }
 	void followedBy(task_p other) { followingTasks_.push_back(other); }
 	void followedBy(std::vector<task_p>& others) { followingTasks_.insert(followingTasks_.end(), others.begin(), others.end()); }
+	void followedBy(std::initializer_list<task_p> others) { followingTasks_.insert(followingTasks_.end(), others.begin(), others.end()); }
 	const std::vector<task_p> followingTasks() const { return followingTasks_; }
 
 	//

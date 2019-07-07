@@ -17,9 +17,10 @@
 namespace cradle {
 namespace cpp {
 
-static const std::string OUTPUT_FILE = "OUTPUT_FILE";
+static const std::string INCLUDE_DIRS = "INCLUDE_DIRS";
 static const std::string LIBRARY_NAME = "LIBRARY_NAME";
 static const std::string LIBRARY_PATH = "LIBRARY_PATH";
+static const std::string OUTPUT_FILE = "OUTPUT_FILE";
 
 namespace detail {
 
@@ -276,10 +277,11 @@ task_p static_lib(
 		);
 
 		self->followedBy(buildArchive);
-		self->followedBy(task([self, buildArchive] (Task* _) {
+		self->followedBy(task([=] (Task* _) {
 			self->set(LIBRARY_NAME, buildArchive->get(LIBRARY_NAME));
 			self->set(LIBRARY_PATH, buildArchive->get(LIBRARY_PATH));
 			self->set(OUTPUT_FILE, buildArchive->get(OUTPUT_FILE));
+			self->push(INCLUDE_DIRS, includeSearchDirs->getList(io::FILE_LIST));
 			return ExecutionResult::SUCCESS;
 		}));
 
