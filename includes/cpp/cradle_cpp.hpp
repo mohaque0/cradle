@@ -260,7 +260,7 @@ task_p exe(
 task_p static_lib(
 	std::string name,
 	task_p sourceFiles,
-	task_p includeSearchDirs = emptyList(io::FILE_LIST),
+	task_p includeSearchDirs = emptyList(INCLUDE_DIRS),
 	std::string outputDirectory = DEFAULT_BUILD_DIR,
 	std::shared_ptr<Toolchain> toolchain = Toolchain::platformDefault()
 ) {
@@ -271,7 +271,7 @@ task_p static_lib(
 			name + ":archive",
 			name,
 			sourceFiles->getList(io::FILE_LIST),
-			includeSearchDirs->getList(io::FILE_LIST),
+			includeSearchDirs->getList(INCLUDE_DIRS),
 			outputDirectory,
 			toolchain
 		);
@@ -281,7 +281,7 @@ task_p static_lib(
 			self->set(LIBRARY_NAME, buildArchive->get(LIBRARY_NAME));
 			self->set(LIBRARY_PATH, buildArchive->get(LIBRARY_PATH));
 			self->set(OUTPUT_FILE, buildArchive->get(OUTPUT_FILE));
-			self->push(INCLUDE_DIRS, includeSearchDirs->getList(io::FILE_LIST));
+			self->push(INCLUDE_DIRS, includeSearchDirs->getList(INCLUDE_DIRS));
 			return ExecutionResult::SUCCESS;
 		}));
 
@@ -298,7 +298,7 @@ class StaticLibBuilder {
 public:
 	builder::Value<StaticLibBuilder, std::string> name{this};
 	builder::StrListFromTask<StaticLibBuilder> sourceFiles{this, io::FILE_LIST};
-	builder::StrListFromTask<StaticLibBuilder> includeSearchDirs{this, io::FILE_LIST};
+	builder::StrListFromTask<StaticLibBuilder> includeSearchDirs{this, INCLUDE_DIRS};
 	builder::Value<StaticLibBuilder, std::string> outputDirectory{this, DEFAULT_BUILD_DIR};
 	builder::Value<StaticLibBuilder, std::shared_ptr<Toolchain>> toolchain{this, Toolchain::platformDefault()};
 
@@ -314,7 +314,7 @@ StaticLibBuilder static_lib() {
 task_p exe(
 	std::string name,
 	task_p sourceFiles,
-	task_p includeSearchDirs = emptyList(io::FILE_LIST),
+	task_p includeSearchDirs = emptyList(INCLUDE_DIRS),
 	task_p linkLibraries = emptyList(LIBRARY_NAME),
 	task_p linkLibraryPaths = emptyList(LIBRARY_PATH),
 	std::string outputDirectory = DEFAULT_BUILD_DIR,
@@ -326,7 +326,7 @@ task_p exe(
 			name + ":link",
 			name,
 			sourceFiles->getList(io::FILE_LIST),
-			includeSearchDirs->getList(io::FILE_LIST),
+			includeSearchDirs->getList(INCLUDE_DIRS),
 			linkLibraries->getList(LIBRARY_NAME),
 			linkLibraryPaths->getList(LIBRARY_PATH),
 			outputDirectory,
@@ -351,7 +351,7 @@ class ExeBuilder {
 public:
 	builder::Str<ExeBuilder> name{this};
 	builder::StrListFromTask<ExeBuilder> sourceFiles{this, io::FILE_LIST};
-	builder::StrListFromTask<ExeBuilder> includeSearchDirs{this, io::FILE_LIST};
+	builder::StrListFromTask<ExeBuilder> includeSearchDirs{this, INCLUDE_DIRS, emptyList(INCLUDE_DIRS)};
 	builder::StrListFromTask<ExeBuilder> linkLibrary{this, LIBRARY_NAME, emptyList(LIBRARY_NAME)};
 	builder::StrListFromTask<ExeBuilder> linklibrarySearchPath{this, LIBRARY_PATH, emptyList(LIBRARY_PATH)};
 	builder::Str<ExeBuilder> outputDirectory{this, DEFAULT_BUILD_DIR};
