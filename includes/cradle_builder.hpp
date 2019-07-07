@@ -242,8 +242,9 @@ public:
 
 	Builder& operator() (const std::string& key, std::initializer_list<task_p> tasks) {
 		for (auto newTask : tasks) {
-			(*this)(key, tasks);
+			(*this)(key, newTask);
 		}
+		return builder;
 	}
 
 	operator task_p() const {
