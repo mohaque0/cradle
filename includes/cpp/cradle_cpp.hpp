@@ -56,6 +56,7 @@ bool isTargetLessRecentThanHeaderFiles(const struct stat& targetFileStat, const 
 
 		if (file.is_dir) {
 			if (isTargetLessRecentThanHeaderFiles(targetFileStat, file.path)) {
+				tinydir_close(&dir);
 				return true;
 			}
 
@@ -68,6 +69,7 @@ bool isTargetLessRecentThanHeaderFiles(const struct stat& targetFileStat, const 
 			const struct stat sourceFileStat = io::getStat(file.path);
 
 			if (difftime(targetFileStat.st_mtime, sourceFileStat.st_mtime) < 0) {
+				tinydir_close(&dir);
 				return true;
 			}
 		}
@@ -75,6 +77,7 @@ bool isTargetLessRecentThanHeaderFiles(const struct stat& targetFileStat, const 
 		tinydir_next(&dir);
 	}
 
+	tinydir_close(&dir);
 	return false;
 }
 

@@ -87,6 +87,7 @@ std::string path_ext(std::string p) {
 void mkdir_if_necessary(std::string d) {
 	tinydir_dir dir;
 	if (tinydir_open(&dir, d.c_str()) != 0) {
+		tinydir_close(&dir);
 		if (platform::platform_mkdir(d.c_str()) != 0 && errno != EEXIST) {
 			log_error(std::string() + "Error making directory " + d.c_str() + ": " + strerror(errno));
 		}
@@ -146,6 +147,8 @@ void recursiveAddFilesInDir(
 
 		tinydir_next(&dir);
 	}
+
+	tinydir_close(&dir);
 }
 
 /**
