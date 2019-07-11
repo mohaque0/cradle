@@ -13,6 +13,7 @@
 #include <io/cradle_stat.hpp>
 
 #include <time.h>
+#include <set>
 
 namespace cradle {
 namespace cpp {
@@ -36,6 +37,23 @@ bool strendswith(const std::string& str, const std::string& end) {
 	}
 
 	return true;
+}
+
+/**
+ * Uniquifies the list but maintains the order. Elements are returned in the order they first appear.
+ */
+template<typename T>
+std::vector<T> uniquify(const std::vector<T>& orig) {
+	std::set<T> seen;
+	std::vector<T> retVal;
+	for (auto& i : orig) {
+		if (seen.find(i) != seen.end()) {
+			continue;
+		}
+		retVal.push_back(i);
+		seen.insert(i);
+	}
+	return retVal;
 }
 
 bool isTargetLessRecentThanHeaderFiles(const struct stat& targetFileStat, const std::string& path) {
@@ -274,7 +292,7 @@ task_p static_lib(
 			name + ":archive",
 			name,
 			sourceFiles->getList(io::FILE_LIST),
-			includeSearchDirs->getList(INCLUDE_DIRS),
+			detail::uniquify(includeSearchDirs->getList(INCLUDE_DIRS)),
 			outputDirectory,
 			toolchain
 		);
@@ -284,7 +302,7 @@ task_p static_lib(
 			self->set(LIBRARY_NAME, buildArchive->get(LIBRARY_NAME));
 			self->set(LIBRARY_PATH, buildArchive->get(LIBRARY_PATH));
 			self->set(OUTPUT_FILE, buildArchive->get(OUTPUT_FILE));
-			self->push(INCLUDE_DIRS, includeSearchDirs->getList(INCLUDE_DIRS));
+			self->push(INCLUDE_DIRS, detail::uniquify(includeSearchDirs->getList(INCLUDE_DIRS)));
 			return ExecutionResult::SUCCESS;
 		}));
 
@@ -329,9 +347,9 @@ task_p exe(
 			name + ":link",
 			name,
 			sourceFiles->getList(io::FILE_LIST),
-			includeSearchDirs->getList(INCLUDE_DIRS),
+			detail::uniquify(includeSearchDirs->getList(INCLUDE_DIRS)),
 			linkLibraries->getList(LIBRARY_NAME),
-			linkLibraryPaths->getList(LIBRARY_PATH),
+			detail::uniquify(linkLibraryPaths->getList(LIBRARY_PATH)),
 			outputDirectory,
 			toolchain
 		);
