@@ -28,15 +28,22 @@ class TaskBuilder {
 	std::string _name;
 	std::vector<detail::SubsequentTask> followers;
 
+	static void copyNonconflictingKeys(Task* dst, Task* src) {
+		for (auto& k : src->propKeys()) {
+			if (!dst->has(k)) {
+				dst->set(k, src->get(k));
+			}
+		}
+		for (auto& k : src->listKeys()) {
+			if (!dst->has(k)) {
+				dst->push(k, src->getList(k));
+			}
+		}
+	}
+
 public:
 	TaskBuilder() :
-		_first(task([] (Task *) { return ExecutionResult::SUCCESS; })),
-		_name(_first->name())
-	{}
-
-	TaskBuilder(std::string _name) :
-		_first(task(_name, [] (Task *) { return ExecutionResult::SUCCESS; })),
-		_name(_name)
+		_first(task([] (Task *) { return ExecutionResult::SUCCESS; }))
 	{}
 
 	TaskBuilder& name(std::string _name) {
@@ -45,12 +52,12 @@ public:
 	}
 
 	TaskBuilder& first(std::function<ExecutionResult(Task*)> f) {
-		_first = task(_name, std::move(f));
+		_first = task(std::move(f));
 		return *this;
 	}
 
 	TaskBuilder& first(task_p t) {
-		_first->dependsOn(t);
+		_first = t;
 		return *this;
 	}
 
@@ -72,12 +79,7 @@ public:
 		followers.push_back(detail::SubsequentTask([t] (Task*, Task* self) {
 			auto retVal = t->execute();
 			if (retVal == ExecutionResult::SUCCESS) {
-				for (auto& k : t->propKeys()) {
-					self->set(k, t->get(k));
-				}
-				for (auto& k : t->listKeys()) {
-					self->push(k, t->getList(k));
-				}
+				TaskBuilder::copyNonconflictingKeys(self, t.get());
 			}
 			return retVal;
 		}));
@@ -90,13 +92,22 @@ public:
 
 		for (auto nextFunction : subsequentTasks) {
 			task_p prev = current;
-			current = task([current, nextFunction] (Task *self) {
-				return nextFunction.get()(current.get(), self);
+			current = task([prev, nextFunction] (Task *self) {
+				ExecutionResult result = nextFunction.get()(prev.get(), self);
+				TaskBuilder::copyNonconflictingKeys(self, prev.get());
+				return result;
 			});
 			current->dependsOn(prev);
 		}
 
-		return current;
+		// Create final task with name.
+		task_p retVal = task(_name, [current] (Task* self) {
+			TaskBuilder::copyNonconflictingKeys(self, current.get());
+			return ExecutionResult::SUCCESS;
+		});
+		retVal->dependsOn(current);
+
+		return retVal;
 	}
 };
 
