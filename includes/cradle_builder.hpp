@@ -51,23 +51,15 @@ public:
 		value(defaultValue),
 		isSet(true)
 	{}
-	Builder& operator()(const ValueType& value) {
+	Builder& operator()(ValueType value) {
 		this->value = value;
 		this->isSet = true;
 		return builder;
 	}
-	operator const ValueType&() const {
+	operator ValueType&() {
 		if (!isSet) throw new std::runtime_error("Attempting to access unset value.");
 		return value;
 	}
-};
-
-template<typename Builder>
-class Str : public Value<Builder, std::string> {
-public:
-	Str() = delete;
-	Str(Builder* builder) : Value<Builder, std::string>(builder) {}
-	Str(Builder* builder, const std::string& defaultValue) : Value<Builder, std::string>(builder, defaultValue) {}
 };
 
 template<typename Builder, typename ValueType>
@@ -83,15 +75,23 @@ public:
 		value(defaultValues),
 		isSet(true)
 	{}
-	Builder& operator()(const ValueType& value) {
+	Builder& operator()(ValueType value) {
 		this->value.push_back(value);
 		this->isSet = true;
 		return builder;
 	}
-	operator const std::vector<ValueType>&() const {
+	operator std::vector<ValueType>&() {
 		if (!isSet) throw new std::runtime_error("Attempting to access unset value.");
 		return value;
 	}
+};
+
+template<typename Builder>
+class Str : public Value<Builder, std::string> {
+public:
+	Str() = delete;
+	Str(Builder* builder) : Value<Builder, std::string>(builder) {}
+	Str(Builder* builder, const std::string& defaultValue) : Value<Builder, std::string>(builder, defaultValue) {}
 };
 
 template<typename Builder>

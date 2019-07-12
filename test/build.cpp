@@ -3,6 +3,18 @@
 using namespace cradle;
 
 build_config {
+	auto chain = task()
+			.name("chain")
+			.first([] (Task *self) {
+				self->set("greeting", "Hello, World!");
+				return ExecutionResult::SUCCESS;
+			})
+			.then([] (Task* prev, Task* self) {
+				log(prev->get("greeting"));
+				return ExecutionResult::SUCCESS;
+			})
+			.build();
+
 	auto conan = conan::conan_install()
 			.name("conan")
 			.pathToConanfile(".")
@@ -25,4 +37,6 @@ build_config {
 			.linkLibrary(conan::LIBS, conan)
 			.linklibrarySearchPath(conan::LIBDIRS, conan)
 			.build();
+
+	exe->dependsOn(chain);
 }

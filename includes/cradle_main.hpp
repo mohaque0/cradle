@@ -101,6 +101,14 @@ public:
 		return properties.find(key) != properties.end();
 	}
 
+	std::vector<std::string> propKeys() {
+		std::vector<std::string> keys;
+		for (auto& it : properties) {
+			keys.push_back(it.first);
+		}
+		return keys;
+	}
+
 	//
 	// Multi-valued properties.
 	//
@@ -132,6 +140,14 @@ public:
 
 	bool hasList(const std::string& key) const {
 		return lists.find(key) != lists.end();
+	}
+
+	std::vector<std::string> listKeys() {
+		std::vector<std::string> keys;
+		for (auto& it : lists) {
+			keys.push_back(it.first);
+		}
+		return keys;
 	}
 
 	// Interface.
@@ -327,7 +343,7 @@ task_p task(std::string name, F&& f) {
  *          The `self` argument passed to `f` is always a pointer to the created task object.
  */
 template <typename F>
-task_p task(F&& f) {
+task_p task(F f) {
 	return std::make_shared<FunctionTask<F>>("", std::move(f));
 }
 
