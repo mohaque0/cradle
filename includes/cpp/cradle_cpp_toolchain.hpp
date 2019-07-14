@@ -63,11 +63,11 @@ public:
 	}
 
 	void addLinkFlags(const std::vector<std::string>& flags) {
-		linkFlags.insert(compileFlags.end(), flags.begin(), flags.end());
+		linkFlags.insert(linkFlags.end(), flags.begin(), flags.end());
 	}
 
 	void addStaticLibFlags(const std::vector<std::string>& flags) {
-		staticLibFlags.insert(compileFlags.end(), flags.begin(), flags.end());
+		staticLibFlags.insert(staticLibFlags.end(), flags.begin(), flags.end());
 	}
 
 	virtual std::string objectFileNameFromBase(const std::string& base) = 0;
