@@ -1,5 +1,5 @@
 # Cradle
-A modern C++ build system.
+A task-oriented C++ build system.
 
 Cradle is a tool for building projects using the components already available on your system if you're building C++ projects. The configuration file is written in C++ and compiled into a binary that builds your project, offering the full power of the C++ language to describe your builds and minimal external tooling.
 
