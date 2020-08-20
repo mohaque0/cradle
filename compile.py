@@ -62,7 +62,7 @@ def build_helper(target, context, headerFile):
             target.write(line)
 
 def build(context, targetfile):
-    print "Writing unified header to:", targetfile
+    print("Writing unified header to:", targetfile)
 
     # Make the parent directory.
     target_parent_dir = os.path.dirname(targetfile)
@@ -79,10 +79,10 @@ def build(context, targetfile):
 def main(args):
     context = create_context()
 
-    print "Creating unified header from:"
+    print("Creating unified header from:")
     for header in sorted(context.keys()):
-	print '\t', header
-    print
+        print('\t', header)
+    print()
 
     build(context, TARGET_HEADER_FILE)
             
